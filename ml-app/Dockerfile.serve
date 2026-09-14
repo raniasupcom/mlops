@@ -1,0 +1,20 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+RUN pip install --no-cache-dir \
+    mlflow==2.11.0 \
+    scikit-learn \
+    boto3 \
+    psycopg2-binary \
+    flask==3.0.3 \
+    gunicorn==22.0.0
+
+COPY serve.py .
+
+ENV PORT=8000
+EXPOSE 8000
+
+# gunicorn so the process doesn't reload the model per-request and survives
+# a few worker restarts; model loading happens once at import time in serve.py
+CMD ["gunicorn", "-w", "2", "-b", "0.0.0.0:8000", "--timeout", "120", "serve:app"]

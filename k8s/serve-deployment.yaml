@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ml-app-serve
+  namespace: mlflow
+  labels:
+    app: ml-app-serve
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: ml-app-serve
+  template:
+    metadata:
+      labels:
+        app: ml-app-serve
+    spec:
+      containers:
+        - name: ml-app-serve
+          image: YOUR_DOCKERHUB_USERNAME/ml-app-serve:latest
+          ports:
+            - containerPort: 8000
+          env:
+            - name: MLFLOW_TRACKING_URI
+              value: "http://mlflow-mlflow.mlflow.svc.cluster.local:5000"
+            - name: REGISTERED_MODEL_NAME
+              value: "iris-classifier"
+            - name: MODEL_STAGE
+              value: "Production"
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ml-app-serve
+  namespace: mlflow
+spec:
+  selector:
+    app: ml-app-serve
+  ports:
+    - port: 8000
+      targetPort: 8000
+  type: ClusterIP

@@ -1,0 +1,41 @@
+replicaCount: 1
+
+image:
+  repository: mlflow-custom
+  tag: "v2.11.0"
+  pullPolicy: Never
+
+service:
+  type: ClusterIP
+  port: 5000
+
+ingress:
+  enabled: true
+  className: nginx
+  host: mlflow.local
+
+postgresql:
+  enabled: true
+  image:
+    tag: "15"
+  auth:
+    username: mlflow
+    password: mlflow123
+    database: mlflow
+
+minio:
+  enabled: true
+  image:
+    tag: "latest"
+  auth:
+    rootUser: minioadmin
+    rootPassword: minioadmin123
+  defaultBuckets: "mlflow"
+
+env:
+  - name: MLFLOW_S3_ENDPOINT_URL
+    value: "http://mlflow-minio:9000"
+  - name: AWS_ACCESS_KEY_ID
+    value: "minioadmin"
+  - name: AWS_SECRET_ACCESS_KEY
+    value: "minioadmin123"

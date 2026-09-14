@@ -1,0 +1,14 @@
+replicaCount: 1
+
+image:
+  tag: "v2.11.0"
+
+postgresql:
+  auth:
+    database: mlflow_dev
+
+minio:
+  defaultBuckets: "mlflow-dev"
+
+ingress:
+  host: mlflow-dev.local
